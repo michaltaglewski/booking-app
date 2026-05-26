@@ -1,0 +1,63 @@
+services:
+  api:
+    container_name: ${DOCKER_PREFIX}api
+    restart: always
+    build:
+      context: ./docker/api
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www
+    ports:
+      - "${API_PORT:-5555}:80"
+    networks:
+      - internal
+
+  php:
+    container_name: ${DOCKER_PREFIX}php
+    restart: always
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www
+    working_dir: ${API_PROJECT_FOLDER}
+    networks:
+      - internal
+
+  db:
+    container_name: ${DOCKER_PREFIX}db
+    restart: always
+    build:
+      context: ./docker/db
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    hostname: ${DB_HOST}
+    networks:
+      - internal
+
+  frontend:
+    container_name: ${DOCKER_PREFIX}frontend
+    restart: always
+    build:
+      context: ./docker/frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/var/www/frontend
+      - frontend_node_modules:/var/www/frontend/node_modules
+    ports:
+      - "${FRONTEND_PORT:-4444}:5173"
+    working_dir: ${FRONTEND_PROJECT_FOLDER}
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  frontend_node_modules:
