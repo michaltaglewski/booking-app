@@ -8,6 +8,10 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
+  max: {
+    type: Number,
+    default: Number.POSITIVE_INFINITY,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -17,7 +21,7 @@ const decrease = () => {
 };
 
 const increase = () => {
-  emit('update:modelValue', props.modelValue + 1);
+  emit('update:modelValue', Math.min(props.max, props.modelValue + 1));
 };
 
 const onInput = (event) => {
@@ -28,7 +32,7 @@ const onInput = (event) => {
     return;
   }
 
-  emit('update:modelValue', Math.max(props.min, value));
+  emit('update:modelValue', Math.min(props.max, Math.max(props.min, value)));
 };
 </script>
 
@@ -42,10 +46,13 @@ const onInput = (event) => {
       class="quantity-field"
       type="number"
       :min="min"
+      :max="Number.isFinite(max) ? max : undefined"
       :value="modelValue"
       @input="onInput"
     />
 
-    <button type="button" class="quantity-button" @click="increase">+</button>
+    <button type="button" class="quantity-button" @click="increase" :disabled="modelValue >= max">
+      +
+    </button>
   </div>
 </template>

@@ -111,6 +111,10 @@ p {
   color: #b91c1c;
 }
 
+.status-success {
+  color: #15803d;
+}
+
 .not-found {
   max-width: 720px;
   margin: 0 auto;

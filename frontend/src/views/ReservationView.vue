@@ -1,6 +1,6 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ApiError, fetchRooms } from '../api.js';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { ApiError, createBooking, fetchRooms } from '../api.js';
 import QuantityInput from '../components/QuantityInput.vue';
 import FormValidation from '../components/FormValidation.vue';
 
@@ -16,7 +16,9 @@ const todayDate = formatDateInputValue(new Date());
 
 const rooms = ref([]);
 const isLoading = ref(true);
+const isSubmitting = ref(false);
 const errorMessage = ref('');
+const successMessage = ref('');
 const fieldErrors = ref({});
 const roomRequestId = ref(0);
 let activeAbortController = null;
@@ -26,6 +28,12 @@ const form = ref({
   startDate: '',
   endDate: '',
   participants: 1,
+});
+
+const selectedRoomCapacity = computed(() => {
+  const selectedRoom = rooms.value.find((room) => String(room.id ?? room.name) === String(form.value.roomId));
+
+  return selectedRoom?.capacity ?? Number.POSITIVE_INFINITY;
 });
 
 const loadRooms = async () => {
@@ -80,10 +88,44 @@ const loadRooms = async () => {
   }
 };
 
-const submitForm = () => {
-  console.log('Reservation form submitted', {
-    ...form.value,
-  });
+const submitForm = async () => {
+  const payload = {
+    roomId: Number(form.value.roomId),
+    startsAt: form.value.startDate,
+    endsAt: form.value.endDate,
+    participantsCount: Number(form.value.participants),
+  };
+
+  isSubmitting.value = true;
+  errorMessage.value = '';
+  successMessage.value = '';
+  fieldErrors.value = {};
+
+  try {
+    await createBooking(payload);
+    successMessage.value = 'Rezerwacja została utworzona.';
+    form.value.roomId = '';
+    form.value.startDate = '';
+    form.value.endDate = '';
+    form.value.participants = 1;
+    await loadRooms();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 422) {
+      fieldErrors.value = typeof error.body === 'object' && error.body !== null && 'errors' in error.body
+        ? error.body.errors ?? {}
+        : {};
+
+      if (Object.keys(fieldErrors.value).length === 0) {
+        errorMessage.value = error.message;
+      }
+
+      return;
+    }
+
+    errorMessage.value = error instanceof Error ? error.message : 'Failed to create booking';
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 const roomFieldHasError = (fieldName) => {
@@ -126,34 +168,6 @@ watch(
 
     <form class="reservation-form" @submit.prevent="submitForm">
       <label class="field">
-        <span>Pokój</span>
-        <div class="select-shell">
-          <select
-            v-model="form.roomId"
-            :disabled="isLoading || !!errorMessage || rooms.length === 0"
-            :aria-busy="isLoading"
-            :aria-invalid="roomFieldHasError('room_id')"
-            :data-status="roomFieldHasError('room_id') ? 'error' : undefined"
-            :aria-describedby="roomFieldHasError('room_id') ? 'room_id-errors' : undefined"
-            required
-          >
-            <option value="" disabled>
-              {{ isLoading ? 'Ładowanie pokoi...' : 'Wybierz pokój' }}
-            </option>
-            <option
-              v-for="room in rooms"
-              :key="room.id ?? `${room.name}-${room.capacity}`"
-              :value="room.id ?? room.name"
-            >
-              {{ room.name }} ({{ room.capacity }})
-            </option>
-          </select>
-          <span v-if="isLoading" class="inline-loader" aria-hidden="true"></span>
-        </div>
-        <FormValidation field="room_id" :errors="fieldErrors" />
-      </label>
-
-      <label class="field">
         <span>Data rozpoczęcia</span>
         <input
           v-model="form.startDate"
@@ -182,14 +196,49 @@ watch(
       </label>
 
       <label class="field">
-        <span>Liczba uczestników</span>
-        <QuantityInput v-model="form.participants" :min="1" />
+        <span>Pokój</span>
+        <div class="select-shell">
+          <select
+              v-model="form.roomId"
+              :disabled="isLoading || !!errorMessage || rooms.length === 0"
+              :aria-busy="isLoading"
+              :aria-invalid="roomFieldHasError('room_id')"
+              :data-status="roomFieldHasError('room_id') ? 'error' : undefined"
+              :aria-describedby="roomFieldHasError('room_id') ? 'room_id-errors' : undefined"
+              required
+          >
+            <option value="" disabled>
+              {{ isLoading ? 'Ładowanie pokoi...' : 'Wybierz pokój' }}
+            </option>
+            <option
+                v-for="room in rooms"
+                :key="room.id ?? `${room.name}-${room.capacity}`"
+                :value="room.id ?? room.name"
+            >
+              {{ room.name }} ({{ room.capacity }})
+            </option>
+          </select>
+          <span v-if="isLoading" class="inline-loader" aria-hidden="true"></span>
+        </div>
+        <FormValidation field="room_id" :errors="fieldErrors" />
       </label>
 
-      <button type="submit" class="submit-button" :disabled="isLoading || !!errorMessage || rooms.length === 0">
-        Zarezerwuj
+      <label class="field">
+        <span>Liczba uczestników</span>
+        <QuantityInput v-model="form.participants" :min="1" :max="selectedRoomCapacity" />
+        <FormValidation field="participants_count" :errors="fieldErrors" />
+      </label>
+
+      <button
+        type="submit"
+        class="submit-button"
+        :disabled="isLoading || isSubmitting || !!errorMessage || rooms.length === 0"
+      >
+        {{ isSubmitting ? 'Rezerwuję...' : 'Zarezerwuj' }}
       </button>
     </form>
+
+    <p v-if="successMessage" class="status status-success">{{ successMessage }}</p>
 
     <div v-if="isLoading" class="loading-backdrop" aria-hidden="true"></div>
   </section>

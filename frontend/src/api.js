@@ -52,3 +52,33 @@ export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
 
   return response.json();
 }
+
+export async function createBooking(
+  { roomId, startsAt, endsAt, participantsCount, signal } = {},
+) {
+  const response = await fetch(new URL(`${API_BASE_URL}/api/bookings`, window.location.origin), {
+    method: 'POST',
+    signal,
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      room_id: roomId,
+      starts_at: startsAt,
+      ends_at: endsAt,
+      participants_count: participantsCount,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await readResponseBody(response);
+    const message = typeof body === 'object' && body !== null && typeof body.message === 'string'
+      ? body.message
+      : `Request failed with status ${response.status}`;
+
+    throw new ApiError(message, response.status, body);
+  }
+
+  return readResponseBody(response);
+}
