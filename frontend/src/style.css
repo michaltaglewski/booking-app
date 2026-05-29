@@ -22,6 +22,31 @@ body {
   padding: 32px;
 }
 
+.app-nav {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.nav-button {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  cursor: pointer;
+}
+
+.nav-button[data-active='true'] {
+  border-color: #111827;
+  background: #111827;
+  color: #ffffff;
+}
+
 h1 {
   margin: 0;
   font-size: 2rem;
@@ -35,6 +60,7 @@ p {
 .rooms-view {
   max-width: 720px;
   margin: 0 auto;
+  text-align: left;
 }
 
 .rooms-header {
@@ -88,4 +114,159 @@ p {
 .not-found {
   max-width: 720px;
   margin: 0 auto;
+  text-align: left;
+}
+
+.reservation-view {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: left;
+  position: relative;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.reservation-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.field span {
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  color: #111827;
+  background: #ffffff;
+}
+
+.field input[data-status='error'],
+.field select[data-status='error'] {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.select-shell {
+  position: relative;
+}
+
+.select-shell select {
+  padding-right: 44px;
+}
+
+.inline-loader {
+  position: absolute;
+  right: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  border: 2px solid #d1d5db;
+  border-top-color: #111827;
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+  pointer-events: none;
+}
+
+.quantity-input {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+}
+
+.quantity-button,
+.submit-button {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+}
+
+.quantity-button {
+  height: 44px;
+  width: 44px;
+  padding: 0;
+}
+
+.quantity-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-field {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  text-align: center;
+  background: #ffffff;
+}
+
+.quantity-field::-webkit-outer-spin-button,
+.quantity-field::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-field[type=number] {
+  -moz-appearance:textfield; /* Firefox */
+}
+
+.form-validation {
+  display: grid;
+  gap: 4px;
+  font-size: 0.875rem;
+}
+
+.form-validation p {
+  color: #b91c1c;
+}
+
+.submit-button {
+  justify-self: start;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loading-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(249, 250, 251, 0.7);
+  backdrop-filter: blur(.5);
+  cursor: progress;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
