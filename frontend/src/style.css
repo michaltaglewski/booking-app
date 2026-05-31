@@ -223,6 +223,12 @@ p {
   position: relative;
 }
 
+.bookings-view {
+  max-width: 1120px;
+  margin: 0 auto;
+  text-align: left;
+}
+
 .auth-view {
   max-width: 480px;
   margin: 0 auto;
@@ -369,6 +375,135 @@ p {
   background: rgba(249, 250, 251, 0.7);
   backdrop-filter: blur(.5);
   cursor: progress;
+}
+
+.table-shell {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.bookings-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+}
+
+.bookings-table th,
+.bookings-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+}
+
+.bookings-table th {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4b5563;
+  background: #f9fafb;
+}
+
+.bookings-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.booking-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.booking-status[data-status='pending'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.booking-status[data-status='confirmed'] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.booking-status[data-status='cancelled'] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.booking-action-button {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  cursor: pointer;
+}
+
+.booking-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.confirm-dialog {
+  width: min(100%, 420px);
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  box-shadow: 0 20px 40px rgba(17, 24, 39, 0.18);
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+}
+
+.confirm-dialog p {
+  margin: 0;
+  color: #4b5563;
+}
+
+.confirm-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-button {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  cursor: pointer;
+}
+
+.confirm-button-danger {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.confirm-button-secondary {
+  background: #ffffff;
 }
 
 @keyframes spin {

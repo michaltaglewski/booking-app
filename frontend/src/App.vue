@@ -5,6 +5,7 @@ import { ApiError, fetchCurrentUser, logoutUser } from './api.js';
 import { ROUTES, ROUTING, getRouteConfig, resolveRoute } from './routing.js';
 import LoginView from './views/LoginView.vue';
 import RegisterView from './views/RegisterView.vue';
+import BookingsView from './views/BookingsView.vue';
 import ReservationView from './views/ReservationView.vue';
 import RoomsView from './views/RoomsView.vue';
 
@@ -237,12 +238,21 @@ watch(route, () => {
       >
         Zarezerwuj
       </button>
+      <button
+        type="button"
+        class="nav-button"
+        :data-active="route === 'bookings'"
+        @click="navigateTo(ROUTES.bookings.path)"
+      >
+        Twoje rezerwacje
+      </button>
     </nav>
 
     <p v-if="isResolvingRoute" class="status">Autoryzacja...</p>
 
     <RoomsView v-else-if="routeIsReady && route === 'rooms'" />
     <ReservationView v-else-if="routeIsReady && route === 'reservations'" />
+    <BookingsView v-else-if="routeIsReady && route === 'bookings'" />
     <LoginView v-else-if="routeIsReady && route === 'login'" @success="handleAuthSuccess" />
     <RegisterView v-else-if="routeIsReady && route === 'register'" @success="handleAuthSuccess" />
 

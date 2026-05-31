@@ -14,6 +14,12 @@ export const ROUTES = {
       requiresUser: true,
     },
   },
+  bookings: {
+    path: '/bookings',
+    auth: {
+      requiresUser: true,
+    },
+  },
   login: {
     path: ROUTING.guestRedirectTo,
     auth: {
