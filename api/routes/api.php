@@ -11,5 +11,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [Api\AuthController::class, 'user'])->name('api.auth.user');
     Route::post('/bookings', [Api\BookingController::class, 'store'])->name('api.booking.store');
     Route::get('/bookings', [Api\BookingController::class, 'index'])->name('api.booking.index');
-    Route::get('/bookings/{id}/cancel', [Api\BookingController::class, 'cancel'])->name('api.booking.cancel');
+    Route::patch('/bookings/{id}/cancel', [Api\BookingController::class, 'cancel'])->name('api.booking.cancel');
 });

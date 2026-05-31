@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GetUserBookingsRequest;
+use App\Http\Requests\Api\PatchCancelBookingRequest;
 use App\Http\Requests\Api\PostCreateBookingRequest;
 use App\Http\Resources\Api\BookingCollection;
 use App\Http\Resources\Api\BookingResource;
@@ -62,8 +63,29 @@ class BookingController extends Controller
         return $bookingResource->response()->setStatusCode(201);
     }
 
-    public function cancel(Request $request, Booking $booking)
+    public function cancel(PatchCancelBookingRequest $request): JsonResponse
     {
-        // @TODO
+        /** @var User $user */
+        $user = Auth::user();
+
+        $booking = $this->bookingRepository->getById($request->validated('id'));
+        if (!$booking) {
+            return response()->json(['message' => 'Booking not found'], 404);
+        }
+
+        if ($booking->user_id !== $user->id) {
+            abort(403, 'Unauthorized to cancel this booking');
+        }
+
+        if ($booking->status === BookingStatus::Cancelled) {
+            return response()->json(['message' => 'Booking is already cancelled'], 400);
+        }
+
+        $booking->status = BookingStatus::Cancelled;
+        $this->bookingRepository->save($booking);
+
+        $bookingResource = new BookingResource($booking);
+
+        return $bookingResource->response()->setStatusCode(200);
     }
 }

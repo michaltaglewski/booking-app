@@ -248,4 +248,77 @@ class BookingControllerTest extends TestCase
             ])
             ->assertConflict();
     }
+
+    #[Test]
+    function shouldCancelBookingForAuthenticatedUser(): void
+    {
+        // Given
+        $booking = Booking::factory()->for($this->room)->for($this->user)->create();
+
+        // When
+        $this->actingAs($this->user)
+            ->patchJson(self::API_BOOKINGS_PATH . '/' . $booking->id . '/cancel')
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'room',
+                    'starts_at',
+                    'ends_at',
+                    'participants_count',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ]
+            ])
+            ->assertJson(['data' => ['status' => 'cancelled']]);
+    }
+
+    #[Test]
+    function shouldNotCancelBookingForUnauthenticatedUser(): void
+    {
+        // Given
+        $booking = Booking::factory()->for($this->room)->for($this->user)->create();
+
+        // When
+        $this->actingAsGuest()
+            ->patchJson(self::API_BOOKINGS_PATH . '/' . $booking->id . '/cancel')
+            ->assertUnauthorized();
+    }
+
+    #[Test]
+    function shouldNotCancelBookingWhenItDoesNotExist(): void
+    {
+        // When
+        $this->actingAs($this->user)
+            ->patchJson(self::API_BOOKINGS_PATH . '/9544bb0b-9a2c-3928-8624-419fb7adec2d/cancel')
+            ->assertNotFound();
+    }
+
+    #[Test]
+    function shouldNotCancelBookingWhenUserDoesNotHavePermissionToThisResource(): void
+    {
+        // Given
+        $otherUser = User::factory()->create();
+        $booking = Booking::factory()->for($this->room)->for($otherUser)->create();
+
+        // When
+        $this->actingAs($this->user)
+            ->patchJson(self::API_BOOKINGS_PATH . '/' . $booking->id . '/cancel')
+            ->assertForbidden();
+    }
+
+    #[Test]
+    function shouldNotCancelBookingWhenItIsAlreadyCancelled(): void
+    {
+        // Given
+        $booking = Booking::factory()->for($this->room)->for($this->user)->create([
+            'status' => 'cancelled'
+        ]);
+
+        // When
+        $this->actingAs($this->user)
+            ->patchJson(self::API_BOOKINGS_PATH . '/' . $booking->id . '/cancel')
+            ->assertBadRequest();
+    }
 }
