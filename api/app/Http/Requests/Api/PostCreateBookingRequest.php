@@ -28,8 +28,8 @@ class PostCreateBookingRequest extends FormRequest
         }
 
         return [
-            'room_id' => ['required', 'exists:rooms,id'],
-            'starts_at' => ['required'],
+            'room_id' => ['required', 'uuid', 'exists:rooms,id'],
+            'starts_at' => ['required', 'after_or_equal:now'],
             'ends_at' => ['required', 'after_or_equal:starts_at'],
             'participants_count' => $participantsRules,
         ];
