@@ -59,9 +59,9 @@ if [ ! -f "$DEPLOYMENT_LOCK" ]; then
             echo "Error while generating application key"
             exit 1
         }
-        echo "Clearing cached config after key generation..."
-        rm -f /var/www/api/bootstrap/cache/config.php || {
-            echo "Error while clearing cached config"
+        echo "Clearing cached application state after key generation..."
+        php artisan optimize:clear || {
+            echo "Error while clearing cached application state"
             exit 1
         }
     fi
