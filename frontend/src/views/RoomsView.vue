@@ -36,7 +36,15 @@ onMounted(loadRooms);
 
     <ul v-else class="rooms-list">
       <li v-for="room in rooms" :key="room.id ?? `${room.name}-${room.capacity}`" class="room-item">
-        <span class="room-name">{{ room.name }}</span>
+        <div class="room-main">
+          <span class="room-name">{{ room.name }}</span>
+          <a
+            class="room-reserve-link"
+            :href="`/reservations?room_id=${encodeURIComponent(room.id ?? room.name)}`"
+          >
+            Rezerwuj
+          </a>
+        </div>
         <span class="room-capacity">Pojemność: {{ room.capacity }}</span>
       </li>
     </ul>

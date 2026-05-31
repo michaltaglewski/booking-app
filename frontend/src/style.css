@@ -193,8 +193,27 @@ p {
   background: #ffffff;
 }
 
+.room-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
 .room-name {
   font-weight: 600;
+}
+
+.room-reserve-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.room-reserve-link:hover,
+.room-reserve-link:focus-visible {
+  text-decoration: underline;
 }
 
 .room-capacity,

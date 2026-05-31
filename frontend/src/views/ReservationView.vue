@@ -139,6 +139,12 @@ const roomFieldHasError = (fieldName) => {
 };
 
 onMounted(() => {
+  const roomIdFromQuery = new URLSearchParams(window.location.search).get('room_id');
+
+  if (roomIdFromQuery) {
+    form.value.roomId = roomIdFromQuery;
+  }
+
   void ensureCsrfCookie();
   void loadRooms();
 });
