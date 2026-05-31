@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { ApiError, cancelBooking, fetchBookings } from '../api.js';
 
 const bookings = ref([]);
+const activeTab = ref('active');
 const isLoading = ref(true);
 const errorMessage = ref('');
 const actionMessage = ref('');
@@ -62,6 +63,18 @@ const formatDate = (value) => {
 };
 
 const getRoomName = (booking) => booking?.room?.name ?? 'Nieznany pokój';
+
+const activeBookings = computed(() =>
+  bookings.value.filter((booking) => ['pending', 'confirmed'].includes(booking?.status)),
+);
+
+const cancelledBookings = computed(() =>
+  bookings.value.filter((booking) => booking?.status === 'cancelled'),
+);
+
+const visibleBookings = computed(() =>
+  activeTab.value === 'active' ? activeBookings.value : cancelledBookings.value,
+);
 
 const getStatusLabel = (status) => {
   switch (status) {
@@ -128,11 +141,38 @@ onBeforeUnmount(() => {
       <h1>Lista rezerwacji</h1>
     </header>
 
+    <div class="bookings-tabs" role="tablist" aria-label="Filtr rezerwacji">
+      <button
+        type="button"
+        class="bookings-tab"
+        :class="{ 'is-active': activeTab === 'active' }"
+        role="tab"
+        :aria-selected="activeTab === 'active'"
+        :tabindex="activeTab === 'active' ? 0 : -1"
+        @click="activeTab = 'active'"
+      >
+        Aktywne
+      </button>
+      <button
+        type="button"
+        class="bookings-tab"
+        :class="{ 'is-active': activeTab === 'cancelled' }"
+        role="tab"
+        :aria-selected="activeTab === 'cancelled'"
+        :tabindex="activeTab === 'cancelled' ? 0 : -1"
+        @click="activeTab = 'cancelled'"
+      >
+        Anulowane
+      </button>
+    </div>
+
     <p v-if="errorMessage" class="status status-error">{{ errorMessage }}</p>
     <p v-else-if="actionMessage" class="status status-success">{{ actionMessage }}</p>
 
     <p v-if="isLoading" class="status">Ładowanie danych...</p>
-    <p v-else-if="!errorMessage && bookings.length === 0" class="status">Brak rezerwacji do wyświetlenia.</p>
+    <p v-else-if="!errorMessage && visibleBookings.length === 0" class="status">
+      Brak rezerwacji do wyświetlenia.
+    </p>
 
     <div v-else class="table-shell">
       <table class="bookings-table">
@@ -148,7 +188,7 @@ onBeforeUnmount(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="booking in bookings" :key="booking.id">
+          <tr v-for="booking in visibleBookings" :key="booking.id">
             <td>{{ getRoomName(booking) }}</td>
             <td>{{ formatDate(booking.starts_at) }}</td>
             <td>{{ formatDate(booking.ends_at) }}</td>
