@@ -77,6 +77,55 @@ async function requestJson(path, { method = 'GET', body, signal } = {}) {
   return response.json();
 }
 
+async function requestAuthed(path, { method = 'GET', body, signal } = {}) {
+  const csrfToken = readCookie('XSRF-TOKEN');
+
+  const response = await fetch(createApiUrl(path), {
+    method,
+    signal,
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+      ...(body ? { 'content-type': 'application/json' } : {}),
+      ...(csrfToken ? { 'x-xsrf-token': csrfToken } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const body = await readResponseBody(response);
+    const message = typeof body === 'object' && body !== null && typeof body.message === 'string'
+      ? body.message
+      : `Request failed with status ${response.status}`;
+
+    throw new ApiError(message, response.status, body);
+  }
+
+  return response;
+}
+
+async function requestAuthedJson(path, options = {}) {
+  const response = await requestAuthed(path, options);
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  return readResponseBody(response);
+}
+
+function readCollectionData(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && typeof payload === 'object' && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  return [];
+}
+
 export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
   const url = createApiUrl('/api/rooms');
 
@@ -105,41 +154,35 @@ export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
     throw new ApiError(message, response.status, body);
   }
 
-  return response.json();
+  const payload = await response.json();
+  return readCollectionData(payload);
 }
 
 export async function createBooking(
   { roomId, startsAt, endsAt, participantsCount, signal } = {},
 ) {
-  const csrfToken = readCookie('XSRF-TOKEN');
-
-  const response = await fetch(createApiUrl('/api/bookings'), {
+  return requestAuthedJson('/api/bookings', {
     method: 'POST',
     signal,
-    credentials: 'include',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      ...(csrfToken ? { 'x-xsrf-token': csrfToken } : {}),
-    },
-    body: JSON.stringify({
+    body: {
       room_id: roomId,
       starts_at: startsAt,
       ends_at: endsAt,
       participants_count: participantsCount,
-    }),
+    },
   });
+}
 
-  if (!response.ok) {
-    const body = await readResponseBody(response);
-    const message = typeof body === 'object' && body !== null && typeof body.message === 'string'
-      ? body.message
-      : `Request failed with status ${response.status}`;
+export async function fetchBookings(signal) {
+  const payload = await requestAuthedJson('/api/bookings', { signal });
+  return readCollectionData(payload);
+}
 
-    throw new ApiError(message, response.status, body);
-  }
-
-  return readResponseBody(response);
+export async function cancelBooking(bookingId, signal) {
+  return requestAuthedJson(`/api/bookings/${bookingId}/cancel`, {
+    method: 'PATCH',
+    signal
+  });
 }
 
 export async function fetchCurrentUser(signal) {
