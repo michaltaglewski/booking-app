@@ -27,7 +27,6 @@ onMounted(loadRooms);
   <section class="rooms-view">
     <header class="rooms-header">
       <div>
-        <p class="eyebrow">Rooms</p>
         <h1>Lista pokoi</h1>
       </div>
     </header>

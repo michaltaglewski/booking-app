@@ -6,7 +6,6 @@ import FormValidation from '../components/FormValidation.vue';
 const emit = defineEmits(['success']);
 
 const title = 'Logowanie';
-const eyebrow = 'Logowanie';
 const submitLabel = 'Zaloguj się';
 
 const form = ref({
@@ -77,7 +76,6 @@ const submitForm = async () => {
 <template>
   <section class="auth-view">
     <header class="section-header">
-      <p class="eyebrow">{{ eyebrow }}</p>
       <h1>{{ title }}</h1>
     </header>
 

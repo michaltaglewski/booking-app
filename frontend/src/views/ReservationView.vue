@@ -163,7 +163,6 @@ watch(
 <template>
   <section class="reservation-view">
     <header class="section-header">
-      <p class="eyebrow">Reservations</p>
       <h1>Formularz rezerwacji</h1>
     </header>
 
