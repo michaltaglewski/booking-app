@@ -78,7 +78,7 @@ const loadRooms = async () => {
       return;
     }
 
-    errorMessage.value = error instanceof Error ? error.message : 'Nie udało się załadować pokoi';
+    errorMessage.value = error instanceof Error ? error.message : 'Nie udało się załadować pokoi.';
   } finally {
     if (requestId !== roomRequestId.value) {
       return;
@@ -103,7 +103,7 @@ const submitForm = async () => {
 
   try {
     await createBooking(payload);
-    successMessage.value = 'The reservation has been created.';
+    successMessage.value = 'Rezerwacja została utworzona.';
     form.value.roomId = '';
     form.value.startDate = '';
     form.value.endDate = '';
@@ -122,7 +122,7 @@ const submitForm = async () => {
       return;
     }
 
-    errorMessage.value = error instanceof Error ? error.message : 'Failed to create booking';
+    errorMessage.value = error instanceof Error ? error.message : 'Nie udało się utworzyć rezerwacji.';
   } finally {
     isSubmitting.value = false;
   }
