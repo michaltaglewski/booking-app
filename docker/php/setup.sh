@@ -59,12 +59,20 @@ if [ ! -f "$DEPLOYMENT_LOCK" ]; then
             echo "Error while generating application key"
             exit 1
         }
-        echo "Clearing cached application state after key generation..."
-        php artisan optimize:clear || {
-            echo "Error while clearing cached application state"
-            exit 1
-        }
     fi
+
+    # Run database migrations without seeding before clearing cached state
+    echo "Running database migrations..."
+    php artisan migrate --force || {
+        echo "Error while running database migrations"
+        exit 1
+    }
+
+    echo "Clearing cached application state..."
+    php artisan optimize:clear || {
+        echo "Error while clearing cached application state"
+        exit 1
+    }
 
     # Create deployment lock file
     echo "Creating deployment lock file..."
