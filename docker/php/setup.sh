@@ -3,17 +3,24 @@ set -e
 
 DEPLOYMENT_LOCK="/var/www/api/.deployment.lock"
 
-# Wait for .env file to appear
-max_attempts=30
-attempt=1
-while [ ! -f /var/www/api/.env ] && [ $attempt -le $max_attempts ]; do
-    echo "Waiting for .env file... (attempt $attempt of $max_attempts)"
-    sleep 2
-    attempt=$((attempt + 1))
-done
+# Bootstrap .env from the example file when needed.
+if [ ! -f /var/www/api/.env ]; then
+    if [ -f /var/www/api/.env.example ]; then
+        echo "Creating .env from .env.example..."
+        cp /var/www/api/.env.example /var/www/api/.env
+    else
+        max_attempts=30
+        attempt=1
+        while [ ! -f /var/www/api/.env ] && [ $attempt -le $max_attempts ]; do
+            echo "Waiting for .env file... (attempt $attempt of $max_attempts)"
+            sleep 2
+            attempt=$((attempt + 1))
+        done
+    fi
+fi
 
 if [ ! -f /var/www/api/.env ]; then
-    echo "Error: .env file not found after ${max_attempts} attempts"
+    echo "Error: .env file not found after bootstrap"
     exit 1
 fi
 
@@ -52,8 +59,13 @@ if [ ! -f "$DEPLOYMENT_LOCK" ]; then
             echo "Error while generating application key"
             exit 1
         }
+        echo "Clearing cached application state after key generation..."
+        php artisan optimize:clear || {
+            echo "Error while clearing cached application state"
+            exit 1
+        }
     fi
-    
+
     # Create deployment lock file
     echo "Creating deployment lock file..."
     date > "$DEPLOYMENT_LOCK"
