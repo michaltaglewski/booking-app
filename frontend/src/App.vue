@@ -16,6 +16,7 @@ const isResolvingRoute = ref(false);
 const routeIsReady = ref(false);
 const currentUser = ref(null);
 const authStatus = ref('loading');
+const isAuthenticated = computed(() => authStatus.value === 'authenticated' && currentUser.value !== null);
 const isUserMenuOpen = ref(false);
 const userMenuRef = ref(null);
 let currentUserRequest = null;
@@ -193,7 +194,7 @@ watch(route, () => {
       </button>
 
       <div class="topbar-actions">
-        <template v-if="authStatus === 'authenticated' && currentUser">
+        <template v-if="isAuthenticated">
           <div ref="userMenuRef" class="user-menu">
             <button
               type="button"
@@ -226,7 +227,7 @@ watch(route, () => {
       </div>
     </header>
 
-    <nav class="app-nav" aria-label="Główna nawigacja">
+    <nav v-if="isAuthenticated" class="app-nav" aria-label="Główna nawigacja">
       <button type="button" class="nav-button" :data-active="route === 'rooms'" @click="navigateTo(ROUTING.defaultRoute)">
         Pokoje
       </button>
