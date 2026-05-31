@@ -90,7 +90,7 @@ const loadRooms = async () => {
 
 const submitForm = async () => {
   const payload = {
-    roomId: Number(form.value.roomId),
+    roomId: form.value.roomId,
     startsAt: form.value.startDate,
     endsAt: form.value.endDate,
     participantsCount: Number(form.value.participants),

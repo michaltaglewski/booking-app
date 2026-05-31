@@ -13,6 +13,7 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->uuid(),
             'name' => fake()->unique()->words(2, true),
             'capacity' => fake()->numberBetween(1, 8),
         ];

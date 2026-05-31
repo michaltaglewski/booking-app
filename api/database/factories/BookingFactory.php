@@ -20,6 +20,7 @@ class BookingFactory extends Factory
         $startsAt = fake()->dateTimeBetween('+1 day', '+30 days');
 
         return [
+            'id' => fake()->uuid(),
             'room_id' => Room::factory(),
             'user_id' => User::factory(),
             'starts_at' => $startsAt,
