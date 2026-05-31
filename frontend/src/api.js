@@ -23,8 +23,62 @@ async function readResponseBody(response) {
   return response.text();
 }
 
+function createApiUrl(path) {
+  return new URL(`${API_BASE_URL}${path}`, window.location.origin);
+}
+
+function readCookie(name) {
+  const match = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${name}=`));
+
+  if (!match) {
+    return '';
+  }
+
+  return decodeURIComponent(match.slice(name.length + 1));
+}
+
+export async function ensureCsrfCookie(signal) {
+  await fetch(createApiUrl('/sanctum/csrf-cookie'), {
+    method: 'GET',
+    signal,
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+    },
+  });
+}
+
+async function requestJson(path, { method = 'GET', body, signal } = {}) {
+  const csrfToken = readCookie('XSRF-TOKEN');
+
+  const response = await fetch(createApiUrl(path), {
+    method,
+    signal,
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+      ...(body ? { 'content-type': 'application/json' } : {}),
+      ...(csrfToken ? { 'x-xsrf-token': csrfToken } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const body = await readResponseBody(response);
+    const message = typeof body === 'object' && body !== null && typeof body.message === 'string'
+      ? body.message
+      : `Request failed with status ${response.status}`;
+
+    throw new ApiError(message, response.status, body);
+  }
+
+  return response.json();
+}
+
 export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
-  const url = new URL(`${API_BASE_URL}/api/rooms`, window.location.origin);
+  const url = createApiUrl('/api/rooms');
 
   if (startsAt) {
     url.searchParams.set('starts_at', startsAt);
@@ -36,6 +90,7 @@ export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
 
   const response = await fetch(url, {
     signal,
+    credentials: 'include',
     headers: {
       accept: 'application/json',
     },
@@ -56,12 +111,16 @@ export async function fetchRooms({ startsAt, endsAt, signal } = {}) {
 export async function createBooking(
   { roomId, startsAt, endsAt, participantsCount, signal } = {},
 ) {
-  const response = await fetch(new URL(`${API_BASE_URL}/api/bookings`, window.location.origin), {
+  const csrfToken = readCookie('XSRF-TOKEN');
+
+  const response = await fetch(createApiUrl('/api/bookings'), {
     method: 'POST',
     signal,
+    credentials: 'include',
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
+      ...(csrfToken ? { 'x-xsrf-token': csrfToken } : {}),
     },
     body: JSON.stringify({
       room_id: roomId,
@@ -81,4 +140,68 @@ export async function createBooking(
   }
 
   return readResponseBody(response);
+}
+
+export async function fetchCurrentUser(signal) {
+  const response = await fetch(createApiUrl('/api/user'), {
+    signal,
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const body = await readResponseBody(response);
+    const message = typeof body === 'object' && body !== null && typeof body.message === 'string'
+      ? body.message
+      : `Request failed with status ${response.status}`;
+
+    throw new ApiError(message, response.status, body);
+  }
+
+  const user = await response.json();
+
+  if (!user) {
+    throw new ApiError('Unauthenticated', 401, user);
+  }
+
+  return user;
+}
+
+export async function loginUser({ email, password, signal } = {}) {
+  return requestJson('/api/login', {
+    method: 'POST',
+    signal,
+    body: {
+      email,
+      password,
+    },
+  });
+}
+
+export async function registerUser({
+  name,
+  email,
+  password,
+  passwordConfirmation,
+  signal,
+} = {}) {
+  return requestJson('/api/register', {
+    method: 'POST',
+    signal,
+    body: {
+      name,
+      email,
+      password,
+      password_confirmation: passwordConfirmation,
+    },
+  });
+}
+
+export async function logoutUser(signal) {
+  return requestJson('/api/logout', {
+    method: 'POST',
+    signal,
+  });
 }

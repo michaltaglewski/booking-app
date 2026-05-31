@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ApiError, createBooking, fetchRooms } from '../api.js';
+import { ApiError, createBooking, ensureCsrfCookie, fetchRooms } from '../api.js';
 import QuantityInput from '../components/QuantityInput.vue';
 import FormValidation from '../components/FormValidation.vue';
 
@@ -78,7 +78,7 @@ const loadRooms = async () => {
       return;
     }
 
-    errorMessage.value = error instanceof Error ? error.message : 'Failed to load rooms';
+    errorMessage.value = error instanceof Error ? error.message : 'Nie udało się załadować pokoi';
   } finally {
     if (requestId !== roomRequestId.value) {
       return;
@@ -103,7 +103,7 @@ const submitForm = async () => {
 
   try {
     await createBooking(payload);
-    successMessage.value = 'Rezerwacja została utworzona.';
+    successMessage.value = 'The reservation has been created.';
     form.value.roomId = '';
     form.value.startDate = '';
     form.value.endDate = '';
@@ -138,7 +138,10 @@ const roomFieldHasError = (fieldName) => {
   return Boolean(value);
 };
 
-onMounted(loadRooms);
+onMounted(() => {
+  void ensureCsrfCookie();
+  void loadRooms();
+});
 
 onBeforeUnmount(() => {
   activeAbortController?.abort();
