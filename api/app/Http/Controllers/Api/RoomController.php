@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GetRoomsRequest;
+use App\Http\Resources\Api\RoomCollection;
 use App\Repositories\RoomRepository;
 use Illuminate\Support\Carbon;
 
@@ -25,6 +26,6 @@ class RoomController extends Controller
             Carbon::parse($validated['ends_at'] ?? null),
         );
 
-        return response()->json($rooms);
+        return new RoomCollection($rooms);
     }
 }

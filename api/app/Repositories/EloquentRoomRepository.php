@@ -7,10 +7,11 @@ namespace App\Repositories;
 use App\Enums\BookingStatus;
 use App\Models\Room;
 use DateTimeInterface;
+use Illuminate\Support\Collection;
 
 class EloquentRoomRepository implements RoomRepository
 {
-    public function getAvailable(?DateTimeInterface $startsAt = null, ?DateTimeInterface $endsAt = null): array
+    public function getAvailable(?DateTimeInterface $startsAt = null, ?DateTimeInterface $endsAt = null): Collection
     {
         $startsAt ??= now();
         $endsAt ??= $startsAt;
@@ -24,7 +25,6 @@ class EloquentRoomRepository implements RoomRepository
                     ->whereDate('starts_at', '<=', $endsAt->toDateString())
                     ->whereDate('ends_at', '>=', $startsAt->toDateString());
             })
-            ->get()
-            ->toArray();
+            ->get();
     }
 }
