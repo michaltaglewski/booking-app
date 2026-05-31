@@ -61,6 +61,22 @@ FRONTEND_PORT=8080
 DB_PORT=3306
 ```
 
+**Pay attention to the remaining API and frontend configuration.**
+
+Frontend communication in `frontend/.env`.
+```dotenv
+VITE_API_BASE_URL=http://localhost:9501
+```
+
+API configuration for frontend communication and CORS in `api/.env`.
+```dotenv
+# Configures CORS allowed origins for the frontend
+FRONTEND_APP_URL=http://localhost:8080
+
+# Sanctum
+SANCTUM_STATEFUL_DOMAINS=localhost:8080
+```
+
 Then build and start the API server.
 
 ```bash
@@ -71,6 +87,7 @@ Your application is set up and running.
 You can access the frontend application at http://localhost:8080 and the backend API at http://localhost:9501.
 
 ### 3. Seed the database with sample data
+You can run fresh migrations and seed the database with sample data:
 
 ```bash
 php artisan migrate:fresh --seed
