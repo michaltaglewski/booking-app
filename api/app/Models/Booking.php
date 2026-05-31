@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property Carbon $starts_at
  * @property Carbon $ends_at
+ * @property int $participants_count
  * @property BookingStatus $status pending | confirmed | cancelled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
