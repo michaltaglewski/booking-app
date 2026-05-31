@@ -6,6 +6,11 @@ if [ ! -f package.json ]; then
   exit 1
 fi
 
+if [ ! -f .env ] && [ -f .env.example ]; then
+  echo "Creating .env from .env.example..."
+  cp .env.example .env
+fi
+
 if [ ! -x node_modules/.bin/vite ]; then
   npm install
 fi
